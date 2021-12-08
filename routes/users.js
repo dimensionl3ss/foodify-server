@@ -1,11 +1,13 @@
 var express = require("express");
-var userRouter = express.Router();
+var router = express.Router();
 const Users = require("../models/users");
 const sql = require('../services/db');
+const bodyParser = require('body-parser');
 /* GET users listing. */
 
-userRouter.route('/')
-  .get(function (req, res, next) {
+router.use(bodyParser.json());
+
+router.get('/', function (req, res, next) {
     sql.promise().query('select * from users')
     .then(([rows, fields]) => {
       console.log(rows);
@@ -15,26 +17,33 @@ userRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
   })
+  .post('/signUp', function (req, res, next) {
 
-  .post(function (req, res, next) {
-    const newUser = new Users({
-      name: req.body.name,
-      id: req.body.email,
-      password: req.body.password,
-      address: req.body.address,
-      pin: req.body.pin,
-    });
-    sql.promise().query('insert into users set ?', newUser)
+    sql.promise().query('select * from users where id = ?', req.body.id)
     .then(([rows, fields]) => {
-      console.log({id: rows.insertId, ...newUser});
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.json({id: rows.insertId, ...newUser});
+      if(rows.length >= 1) {
+        var err = new Error('User ' + req.body.id + ' already exists!');
+        err.status = 403;
+        next(err);
+      }
+      else {
+        let newUser = new Users(req.body);
+        newUser = Object.assign(newUser, {admin: '0'});
+        sql.promise().query('insert into users set ?', newUser)
+        .then(([rows, fields]) => {
+          console.log({id: rows.insertId, ...newUser});
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({id: rows.insertId, ...newUser});
+        }, (err) => next(err))
+        .catch((err) => next(err));
+        
+      }  
     }, (err) => next(err))
     .catch((err) => next(err));
   })
 
-  .delete((req, res, next) => {
+  .delete('/', (req, res, next) => {
     sql.promise().query('delete from users')
     .then(([rows, fields]) => {
       console.log(rows);
@@ -45,8 +54,8 @@ userRouter.route('/')
     .catch((err) => next(err));
   });
 
-userRouter.route('/:id')
-.get((req, res, next) => {
+router
+.get('/:id', (req, res, next) => {
   sql.promise().query('select * from users where id = ?', req.params.id)
   .then(([rows, fields]) => {
     console.log(rows);
@@ -55,12 +64,8 @@ userRouter.route('/:id')
     res.json(rows);
   }, (err) => next(err))
   .catch((err) => next(err));
-})
-.post((req, res, next) => {
-  res.statusCode = 403;
-  res.end('POST operation not supported on /users/id');
-})
-.delete((req, res, next) => {
+}) 
+.delete('/:id', (req, res, next) => {
   sql.promise().query('delete from users where id = ?', req.params.id)
   .then(([rows,fields]) => {
 
@@ -77,4 +82,6 @@ userRouter.route('/:id')
   .catch((err) => next(err));
 })
 
-module.exports = userRouter;
+
+  
+module.exports = router;
