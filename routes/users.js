@@ -43,6 +43,62 @@ router.get('/', function (req, res, next) {
     .catch((err) => next(err));
   })
 
+  .post('/login', (req, res, next) => {
+
+    if(!req.session.user) {
+
+      let authHeader = req.headers.authorization;
+      if (!authHeader) {
+        let err = new Error('You are not authenticated!');
+        res.setHeader('WWW-Authenticate', 'Basic');
+        err.status = 401;
+        return next(err);
+      }
+  
+      let auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+      let username = auth[0];
+      let password = auth[1];
+  
+      sql.promise().query('select * from users where id = ?', username)
+      .then(([rows, fields]) => {
+        if (rows[0].id === username && rows[0].password === password) {
+          req.session.user = 'authenticated';
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'text/plain');
+          res.end('You are authenticated!')
+        }
+        else if (rows[0].password !== password) {
+          let err = new Error('Your password is incorrect!');
+          err.status = 403;
+          return next(err);
+        }
+        else if (rows === null) {
+          let err = new Error('User ' + username + ' does not exist!');
+          err.status = 403;
+          return next(err);
+        }
+      })
+      .catch((err) => next(err));
+    }
+    else {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('You are already authenticated!');
+    }
+  })
+
+  .get('/logout', (req, res) => {
+    if (req.session) {
+      req.session.destroy();
+      res.clearCookie('session-id');
+      res.redirect('/');
+    }
+    else {
+      var err = new Error('You are not logged in!');
+      err.status = 403;
+      next(err);
+    }
+  })
   .delete('/', (req, res, next) => {
     sql.promise().query('delete from users')
     .then(([rows, fields]) => {

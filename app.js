@@ -5,6 +5,12 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const bodyParser = require('body-parser');
 
+const session = require('express-session');
+
+//store session-info in local project-directory
+const FileStore = require('session-file-store')(session);
+
+
 var indexRouter = require('./routes/index');
 var userRouter = require('./routes/users');
 const dishRouter = require('./routes/dishesRouter');
@@ -21,8 +27,41 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+app.use(session({
+  name: 'session-id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore({logFn: function(){}})
+}));
+
+
+const auth = (req, res, next) => {
+
+  console.log('req.session: ',req.session);
+  if(!req.session.user) {
+      let err = new Error('You are not authenticated!');
+      err.status = 403;
+      return next(err);
+  }
+  else {
+    if (req.session.user === 'authenticated') {
+      next();
+    }
+    else {
+      let err = new Error('You are not authenticated!');
+      err.status = 403;
+      return next(err);
+    }
+  }
+}
+
 app.use('/', indexRouter);
 app.use('/users', userRouter);
+
+app.use(auth);
+
 app.use('/dishes', dishRouter);
 
 // catch 404 and forward to error handler
