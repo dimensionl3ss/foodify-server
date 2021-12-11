@@ -1,11 +1,41 @@
-// constructor
+const Sequelize = require('sequelize');
+const sequelize = require('../services/db');
 
-const Dishes = function(Dish) {
-    this.name = Dish.name;
-    this.description = Dish.description;
-    this.image = Dish.image;
-    this.price = Dish.price;
-    this.featured = Dish.featured;
-  };
-
-module.exports = Dishes;
+//user-schema
+const Dish = sequelize.define('dish', {
+    id: {
+      type: Sequelize.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false
+    },
+    name: {
+      field: 'name',
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    description: {
+      field: 'description',
+      type: Sequelize.STRING,
+      allowNull: false
+    },
+    price: {
+      type: Sequelize.INTEGER,
+      allowNull: false
+    },
+    image: {
+      type: Sequelize.STRING,
+      allowNull: true
+    },
+    featured: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false
+    },
+  }, {
+    tableName: 'dishes'
+  });
+  
+sequelize.sync()
+.then(() => console.log('Dishes table created.'))
+.catch((err) => console.log(err));
+module.exports = Dish;

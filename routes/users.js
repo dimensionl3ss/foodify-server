@@ -1,49 +1,47 @@
 var express = require("express");
 var router = express.Router();
-const Users = require("../models/users");
-const sql = require('../services/db');
+const User = require("../models/users");
 const bodyParser = require('body-parser');
+const passport = require('passport');
+const { where, Op } = require("sequelize/dist");
 /* GET users listing. */
 
 router.use(bodyParser.json());
 
 router.get('/', function (req, res, next) {
-    sql.promise().query('select * from users')
-    .then(([rows, fields]) => {
-      console.log(rows);
+    User.findAll({})
+    .then((users) => {
+      console.log(users);
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.json(rows);
+      res.json(users);
     }, (err) => next(err))
     .catch((err) => next(err));
   })
   .post('/signUp', function (req, res, next) {
 
-    sql.promise().query('select * from users where id = ?', req.body.id)
-    .then(([rows, fields]) => {
-      if(rows.length >= 1) {
-        var err = new Error('User ' + req.body.id + ' already exists!');
+    User.findOne({where: {email: req.body.email}})
+    .then((user) => {
+      if(user) {
+        var err = new Error('User ' + req.body.email + ' already exists!');
         err.status = 403;
         next(err);
       }
       else {
-        let newUser = new Users(req.body);
-        newUser = Object.assign(newUser, {admin: '0'});
-        sql.promise().query('insert into users set ?', newUser)
-        .then(([rows, fields]) => {
-          console.log({id: rows.insertId, ...newUser});
+        User.create(req.body)
+        .then((user) => {
+          console.log(user);
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
-          res.json({id: rows.insertId, ...newUser});
+          res.json(user);
         }, (err) => next(err))
         .catch((err) => next(err));
-        
       }  
     }, (err) => next(err))
     .catch((err) => next(err));
   })
 
-  .post('/login', (req, res, next) => {
+/*  .post('/login', (req, res, next) => {
 
     if(!req.session.user) {
 
@@ -86,7 +84,13 @@ router.get('/', function (req, res, next) {
       res.end('You are already authenticated!');
     }
   })
-
+*/
+  .post('/login', passport.authenticate('local'), (req, res) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success: true, status: 'You are successfully logged in!'});
+  })
+  
   .get('/logout', (req, res) => {
     if (req.session) {
       req.session.destroy();
@@ -100,36 +104,34 @@ router.get('/', function (req, res, next) {
     }
   })
   .delete('/', (req, res, next) => {
-    sql.promise().query('delete from users')
-    .then(([rows, fields]) => {
-      console.log(rows);
+    User.destroy({truncate: true})
+    .then((user) => {
+      console.log(user);
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.json(rows);
+      res.json('All users has been deleted');
     }, (err) => next(err))
     .catch((err) => next(err));
   });
 
 router
 .get('/:id', (req, res, next) => {
-  sql.promise().query('select * from users where id = ?', req.params.id)
-  .then(([rows, fields]) => {
-    console.log(rows);
+  User.findOne({where: {id: req.params.id}})
+  .then((user) => {
+    console.log(user);
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.json(rows);
+    res.json(user);
   }, (err) => next(err))
   .catch((err) => next(err));
 }) 
 .delete('/:id', (req, res, next) => {
-  sql.promise().query('delete from users where id = ?', req.params.id)
-  .then(([rows,fields]) => {
-
-    if(rows.affectedRows < 1) {
-      err = new Error('User not found');
-      err.status = 404;
-      throw err;
-    }
+  User.destroy({
+    where: { 
+      [Op.or]: [{id: req.params.id}, {email: req.params.id}]
+    }})
+  .then((user) => {
+    console.log(user)
     console.log('User with id: '+ req.params.id + ' has been deleted.');
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');

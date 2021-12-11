@@ -3,10 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const bodyParser = require('body-parser');
-
+const Sequelize = require('sequelize');
+const config = require('./config/config')
 const session = require('express-session');
 
+const passport = require('passport');
+const authenticate = require('./authentication');
 //store session-info in local project-directory
 const FileStore = require('session-file-store')(session);
 
@@ -39,28 +41,24 @@ app.use(session({
 
 const auth = (req, res, next) => {
 
-  console.log('req.session: ',req.session);
-  if(!req.session.user) {
+  console.log('req.user: ',req.user);
+  if(!req.user) {
       let err = new Error('You are not authenticated!');
       err.status = 403;
       return next(err);
   }
   else {
-    if (req.session.user === 'authenticated') {
       next();
-    }
-    else {
-      let err = new Error('You are not authenticated!');
-      err.status = 403;
-      return next(err);
-    }
   }
 }
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', userRouter);
 
-app.use(auth);
+//app.use(auth);
 
 app.use('/dishes', dishRouter);
 

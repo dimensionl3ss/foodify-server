@@ -1,17 +1,17 @@
 const mysql = require('mysql2');
 const config = require('../config/config');
- 
+const Sequelize = require('sequelize');
 
-const connection = mysql.createConnection(config.db);
+const sequelize = new Sequelize(config.db.database, config.db.user, config.db.password, {
+    host: config.db.host,
+    dialect: config.db.dialect
+});
 
-connection.connect((error) => {
-    if(error) throw error;
-    const table = `create table if not exists users (name varchar(50) not null, id varchar(30) primary key, password varchar(30) not null, address varchar(300) not null, pin int not null)`;
-    connection.query(table, (err) => {
-        if(err) throw err;
-        console.log('Table Created!');
-    })
-    console.log('connected successfully!!');
+//connect sequelize to the database
+sequelize.authenticate()
+.then(() => {
+  console.log('Connected to the databse.\n');
 })
+.catch((err) => {console.log(err)});
 
-module.exports = connection;
+module.exports = sequelize;
