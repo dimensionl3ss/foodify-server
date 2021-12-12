@@ -16,6 +16,7 @@ const FileStore = require('session-file-store')(session);
 var indexRouter = require('./routes/index');
 var userRouter = require('./routes/users');
 const dishRouter = require('./routes/dishesRouter');
+const uploadRouter = require('./routes/uploadRouter');
 
 var app = express();
 
@@ -59,6 +60,7 @@ app.use('/', indexRouter);
 //app.use(auth);
 app.use('/users', userRouter);
 app.use('/dishes', dishRouter);
+app.use('/imageUpload', uploadRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
