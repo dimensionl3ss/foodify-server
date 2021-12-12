@@ -6,5 +6,5 @@ module.exports = {
         database: 'mydb',
         dialect: 'mysql'
     },
-    secretKey : '1234-5678-9012' 
+    secretKey : '12345-67890-09876-54321' 
 }

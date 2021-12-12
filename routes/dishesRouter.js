@@ -2,6 +2,8 @@ var express = require("express");
 var dishRouter = express.Router();
 const bodyParser = require("body-parser");
 const Dish = require("../models/dishes");
+const passport = require('passport');
+const authenticate = require('../authentication');
 
 dishRouter.use(bodyParser.json());
 
@@ -17,7 +19,7 @@ dishRouter
     }, (err) => next(err))
     .catch((err) => next(err));
   })
-  .post((req, res, next) => {
+  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dish.create(req.body)
     .then((dishes) => {
       console.log(dishes);
@@ -27,13 +29,13 @@ dishRouter
     }, (err) => next(err))
     .catch((err) => next(err));
   })
-  .delete((req, res, next) => {
+  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dish.destroy({truncate: true})
     .then((dishes) => {
       console.log(dishes);
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.json('All dishes has been deleted');
+      res.json({success: true, status:'All dishes has been deleted'});
     }, (err) => next(err))
     .catch((err) => next(err));
   });
@@ -53,7 +55,7 @@ dishRouter
     .catch((err) => next(err));
   })
 
-  .put((req, res, next) => {
+  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
       Dish.update(req.body, {where: {id: req.params.dishId}})
       .then((dish) => {
 
@@ -70,7 +72,7 @@ dishRouter
       .catch((err) => next(err));
   })
 
-  .delete((req, res, next) => {
+  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dish.destroy({
       where: {id: req.params.dishId}
     })
@@ -78,7 +80,7 @@ dishRouter
       console.log(dish);
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.json('Dish with id '+ req.params.dishId + 'has been deleted.');
+      res.json({success: true, status:'Dish with id '+ req.params.dishId + ' has been deleted.'});
     }, (err) => next(err))
     .catch((err) => next(err));
   });

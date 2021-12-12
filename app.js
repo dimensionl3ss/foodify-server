@@ -39,27 +39,25 @@ app.use(session({
 }));
 
 
-const auth = (req, res, next) => {
+// const auth = (req, res, next) => {
 
-  console.log('req.user: ',req.user);
-  if(!req.user) {
-      let err = new Error('You are not authenticated!');
-      err.status = 403;
-      return next(err);
-  }
-  else {
-      next();
-  }
-}
+//   console.log('req.user: ',req.user);
+//   if(!req.user) {
+//       let err = new Error('You are not authenticated!');
+//       err.status = 403;
+//       return next(err);
+//   }
+//   else {
+//       next();
+//   }
+// }
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
-app.use('/users', userRouter);
-
 //app.use(auth);
-
+app.use('/users', userRouter);
 app.use('/dishes', dishRouter);
 
 // catch 404 and forward to error handler
