@@ -4,12 +4,14 @@ const bodyParser = require("body-parser");
 const Dish = require("../models/dishes");
 const passport = require('passport');
 const authenticate = require('../authentication');
+const cors = require('./cors');
 
 dishRouter.use(bodyParser.json());
 
 dishRouter
   .route("/")
-  .get((req, res, next) => {
+  .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+  .get(cors.cors, (req, res, next) => {
     Dish.findAll({})
     .then((dishes) => {
       console.log(dishes);
@@ -19,7 +21,7 @@ dishRouter
     }, (err) => next(err))
     .catch((err) => next(err));
   })
-  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dish.create(req.body)
     .then((dishes) => {
       console.log(dishes);
@@ -29,7 +31,7 @@ dishRouter
     }, (err) => next(err))
     .catch((err) => next(err));
   })
-  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dish.destroy({truncate: true})
     .then((dishes) => {
       console.log(dishes);
@@ -42,7 +44,8 @@ dishRouter
 
 dishRouter
   .route("/:dishId")
-  .get((req, res, next) => {
+  .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+  .get(cors.cors, (req, res, next) => {
     Dish.findOne({
       where: {id: req.params.dishId}
     })
@@ -55,7 +58,7 @@ dishRouter
     .catch((err) => next(err));
   })
 
-  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
       Dish.update(req.body, {where: {id: req.params.dishId}})
       .then((dish) => {
 
@@ -72,7 +75,7 @@ dishRouter
       .catch((err) => next(err));
   })
 
-  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Dish.destroy({
       where: {id: req.params.dishId}
     })

@@ -6,11 +6,12 @@ const passport = require('passport');
 const { where, Op } = require("sequelize/dist");
 const authenticate = require('../authentication');
 const { token } = require("morgan");
+const cors = require('./cors');
 /* GET users listing. */
 
 router.use(bodyParser.json());
 
-router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function (req, res, next) {
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, function (req, res, next) {
     User.findAll({})
     .then((users) => {
       console.log(users);
@@ -20,7 +21,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function (req
     }, (err) => next(err))
     .catch((err) => next(err));
   })
-  .post('/signUp', function (req, res, next) {
+  .post('/signUp', cors.corsWithOptions, function (req, res, next) {
 
     User.findOne({where: {email: req.body.email}})
     .then((user) => {
@@ -45,15 +46,34 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function (req
     .catch((err) => next(err));
   })
 
-  .post('/login', passport.authenticate('local'), (req, res) => {
-    var token = authenticate.getToken({email: req.user.email});
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');;
-    res.json({success: true, token: token, status: 'You are successfully logged in!'});
-    
+  .post('/login', cors.corsWithOptions, (req, res, next) => {
+
+    passport.authenticate('local', (err, user, info) =>{
+      if(err) 
+        return next(err);
+
+        if (!user) {
+          res.statusCode = 401;
+          res.setHeader('Content-Type', 'application/json');
+          res.json({success: false, status: 'Login Unsuccessful!', err: info});
+        }
+
+        req.logIn(user, (err) => {
+          if (err) {
+            res.statusCode = 401;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({success: false, status: 'Login Unsuccessful!', err: 'Could not log in user!'});          
+          }
+
+          var token = authenticate.getToken({email: req.user.email});
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');;
+          res.json({success: true, token: token, status: 'You are successfully logged in!'});
+        });
+    }) (req, res, next);
   })
   
-  .get('/logout', (req, res) => {
+  .get('/logout', cors.corsWithOptions, (req, res) => {
     if (req.session) {
       req.session.destroy();
       res.clearCookie('session-id');
@@ -65,7 +85,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function (req
       next(err);
     }
   })
-  .delete('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .delete('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     User.destroy({truncate: true})
     .then((user) => {
       console.log(user);
@@ -77,7 +97,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function (req
   });
 
 router
-.get('/:id', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.get('/:id', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
   User.findOne({where: {id: req.params.id}})
   .then((user) => {
     console.log(user);
@@ -87,7 +107,7 @@ router
   }, (err) => next(err))
   .catch((err) => next(err));
 }) 
-.delete('/:id', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete('/:id', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
   User.destroy({
     where: { 
       [Op.or]: [{id: req.params.id}, {email: req.params.id}]
