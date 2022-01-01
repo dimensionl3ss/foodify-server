@@ -37,7 +37,8 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
           passport.authenticate('local')(req, res, () => {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.json({success: true, status: 'Registration Successful!'});
+            res.json({success: true, status: 'Registration Successful!', newUser: user});
+            res.send(user)
           })
         }, (err) => next(err))
         .catch((err) => next(err));

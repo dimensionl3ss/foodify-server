@@ -1,8 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../services/db');
 
-//user-schema
-const User = sequelize.define('user', {
+const Feedback = sequelize.define('feedback', {
     id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
@@ -19,32 +18,34 @@ const User = sequelize.define('user', {
       type: Sequelize.STRING,
       allowNull: false
     },
+    phone: {
+        type: Sequelize.STRING(10),
+        allowNull: false
+    },
     email: {
       type: Sequelize.STRING,
       allowNull: false
     },
-    password: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
-    phone: {
-        type: Sequelize.BIGINT,
-        allowNull: false
-    },
-    pin: {
-      type: Sequelize.INTEGER,
-      allowNull: false
-    },
-    admin: {
+    agree: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: '0'
+        defaultValue: '0',
+    },
+    contactType: {
+        field: 'contact_type',
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'phone'
+    },
+    message: {
+        type: Sequelize.STRING(4096),
+        allowNull: false,
     }
   }, {
-    tableName: 'users'
+    tableName: 'feedbacks'
   });
   
 sequelize.sync()
-.then(() => console.log('Users table created.'))
+.then(() => console.log('Feedbacks table created.'))
 .catch((err) => console.log(err));
-module.exports = User;
+module.exports = Feedback; 

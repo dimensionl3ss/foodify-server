@@ -17,6 +17,7 @@ var indexRouter = require('./routes/index');
 var userRouter = require('./routes/users');
 const dishRouter = require('./routes/dishesRouter');
 const uploadRouter = require('./routes/uploadRouter');
+const feedbackRouter = require('./routes/feedbackRouter');
 
 var app = express();
 
@@ -24,7 +25,7 @@ app.all('*', (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
-  // res.header('Access-Control-Allow-Credentials', true);
+  res.header('Access-Control-Allow-Credentials', true);
   res.header('Content-Type', 'application/json; charset=utf-8')
   next();
 });
@@ -70,6 +71,8 @@ app.use('/', indexRouter);
 app.use('/users', userRouter);
 app.use('/dishes', dishRouter);
 app.use('/imageUpload', uploadRouter);
+
+app.use('/feedback', feedbackRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
