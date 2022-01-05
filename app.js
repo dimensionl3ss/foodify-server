@@ -6,7 +6,6 @@ var logger = require('morgan');
 const Sequelize = require('sequelize');
 const config = require('./config/config')
 const session = require('express-session');
-
 const passport = require('passport');
 const authenticate = require('./authentication');
 //store session-info in local project-directory
@@ -18,6 +17,15 @@ var userRouter = require('./routes/users');
 const dishRouter = require('./routes/dishesRouter');
 const uploadRouter = require('./routes/uploadRouter');
 const feedbackRouter = require('./routes/feedbackRouter');
+const commentRouter = require('./routes/commentRouter');
+const db = require('./models');
+
+db.sequelize.authenticate()
+.then(() => {
+  db.sequelize.sync();
+  console.log('Synced')
+})
+.catch(err => console.log(err)); 
 
 var app = express();
 
@@ -73,6 +81,7 @@ app.use('/dishes', dishRouter);
 app.use('/imageUpload', uploadRouter);
 
 app.use('/feedback', feedbackRouter);
+app.use('/comments', commentRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../services/db');
+// const Comment = require('./comments');
 
-//user-schema
-const Dish = sequelize.define('dish', {
+module.exports = (sequelize) => {
+const Dish = sequelize.define('Dish', {
     id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
@@ -34,8 +34,17 @@ const Dish = sequelize.define('dish', {
   }, {
     tableName: 'dishes'
   });
-  
-sequelize.sync()
-.then(() => console.log('Dishes table created.'))
-.catch((err) => console.log(err));
-module.exports = Dish;
+
+  Dish.associate = (models) => {
+
+    Dish.hasMany(models.Comment, { 
+      onDelete: 'cascade',
+      foreignKey: {
+      fieldName: 'dishId',
+      allowNull: false,
+    }});
+  }
+return Dish; 
+}
+
+//module.exports = Dish;

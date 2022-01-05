@@ -1,7 +1,7 @@
 var express = require("express");
 var dishRouter = express.Router();
 const bodyParser = require("body-parser");
-const Dish = require("../models/dishes");
+const {Dish, User, Comment} = require('../models/');
 const passport = require('passport');
 const authenticate = require('../authentication');
 const cors = require('./cors');
@@ -12,7 +12,7 @@ dishRouter
   .route("/")
   .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
   .get(cors.cors, (req, res, next) => {
-    Dish.findAll({})
+    Dish.findAll(req.query)
     .then((dishes) => {
       console.log(dishes);
       res.statusCode = 200;
@@ -46,9 +46,7 @@ dishRouter
   .route("/:dishId")
   .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
   .get(cors.cors, (req, res, next) => {
-    Dish.findOne({
-      where: {id: req.params.dishId}
-    })
+    Dish.findByPk(req.params.dishId)
     .then((dishes) => {
       console.log(dishes);
       res.statusCode = 200;

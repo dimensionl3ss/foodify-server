@@ -1,7 +1,8 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../services/db');
+//const sequelize = require('../services/db');
 
-const Feedback = sequelize.define('feedback', {
+module.exports = (sequelize) => {
+const Feedback = sequelize.define('Feedback', {
     id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
@@ -44,8 +45,8 @@ const Feedback = sequelize.define('feedback', {
   }, {
     tableName: 'feedbacks'
   });
-  
-sequelize.sync()
-.then(() => console.log('Feedbacks table created.'))
-.catch((err) => console.log(err));
-module.exports = Feedback; 
+
+return Feedback;
+} 
+
+//module.exports = Feedback;

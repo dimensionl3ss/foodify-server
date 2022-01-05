@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const User = require("../models/users");
+const {User} = require("../models/");
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const { where, Op } = require("sequelize/dist");
@@ -38,7 +38,6 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.json({success: true, status: 'Registration Successful!', newUser: user});
-            res.send(user)
           })
         }, (err) => next(err))
         .catch((err) => next(err));
