@@ -25,20 +25,24 @@ const Comment = sequelize.define('Comment', {
 
 Comment.associate = models => {
     Comment.belongsTo(models.Dish, {
+        onDelete: 'cascade',
         foreignKey: {
+            field: 'dishId',
             allowNull: false,
         }
     });
-}
-
-Comment.associate = models => {
-
     Comment.belongsTo(models.User, {
+        onDelete: 'cascade',
         foreignKey: {
             allowNull: false
         }
     });
 }
+
+/*Comment.associate = models => {
+
+    
+}*/
 return Comment; 
 }
 

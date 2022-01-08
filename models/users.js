@@ -60,6 +60,14 @@ module.exports = (sequelize) => {
   }});
   };
 
+  User.associate = models => {
+    User.hasMany(models.Favorite, { 
+      onDelete: 'cascade',
+      foreignKey: {
+        allowNull: false,
+  }});
+  };
+
  return User;
 };
 

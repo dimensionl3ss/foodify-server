@@ -29,13 +29,19 @@ const Dish = sequelize.define('Dish', {
     },
     featured: {
       type: Sequelize.BOOLEAN,
-      allowNull: false
+      allowNull: false,
+      defaultValue: '1',
+    },
+    promotion: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: '0',
     },
   }, {
     tableName: 'dishes'
   });
 
-  Dish.associate = (models) => {
+ Dish.associate = (models) => {
 
     Dish.hasMany(models.Comment, { 
       onDelete: 'cascade',
@@ -44,6 +50,37 @@ const Dish = sequelize.define('Dish', {
       allowNull: false,
     }});
   }
+
+  /*Dish.associate = (models) => {
+    Dish.hasMany(models.Favorite, { 
+      onDelete: 'cascade',
+      foreignKey: {
+      fieldName: 'dishId',
+      allowNull: false,
+    }});
+    Dish.belongsTo(models.Favorite, {
+      onDelete: 'cascade',
+      foreignKey: {
+      fieldName: 'dishId',
+      allowNull: false,
+    }
+    });
+  }*/
+
+  /*Dish.associate = (models) => {
+    Dish.belongsTo(models.Favorite, {
+      onDelete: 'cascade',
+      foreignKey: {
+      fieldName: 'dishId',
+      allowNull: false,
+    }
+    })
+  }*/
+  /*Dish.associate = (models) => {
+    Dish.belongsTo(models.Chef, {
+      foreignKey: false,
+    });
+  }*/
 return Dish; 
 }
 

@@ -18,6 +18,8 @@ const dishRouter = require('./routes/dishesRouter');
 const uploadRouter = require('./routes/uploadRouter');
 const feedbackRouter = require('./routes/feedbackRouter');
 const commentRouter = require('./routes/commentRouter');
+const chefsRouter = require('./routes/chefsRouter');
+const favoritesRouter = require('./routes/favoritesRouter');
 const db = require('./models');
 
 db.sequelize.authenticate()
@@ -82,6 +84,8 @@ app.use('/imageUpload', uploadRouter);
 
 app.use('/feedback', feedbackRouter);
 app.use('/comments', commentRouter);
+app.use('/chefs', chefsRouter);
+app.use('/favorites', favoritesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
