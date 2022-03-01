@@ -13,7 +13,7 @@ router.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, (req, res, next) => {
     
-    Comment.findAll({include : [{model: User, as: 'User'}]}, req.query)
+    Comment.findAll({include : [{model: User, as: 'User'}, {model: Dish, as: 'Dish'}]}, req.query)
   .then((comments) => {
       console.log(comments)
       res.statusCode = 200;
@@ -31,10 +31,11 @@ router.route('/')
     .then((userId) => {
       if(req.body !== null) {
         req.body.UserId = userId;
+        console.log(req.body);
         Comment.create(req.body)
         .then(comment => comment.dataValues.commentId)
         .then(commentId => {
-            Comment.findOne({where: {commentId: commentId},include:[{model: User, as: 'User'}]})
+            Comment.findOne({where: {commentId: commentId},include:[{model: User, as: 'User'},{model: Dish, as: 'Dish'}]})
             .then(commentWithUser => {
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
@@ -61,7 +62,7 @@ router.route('/')
 })
 router.route('/:commentId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
-.get(cors.cors, (req, res, next) => {
+/*.get(cors.cors, (req, res, next) => {
   Comment.findOne({
     include: [{
       model: User,
@@ -69,7 +70,7 @@ router.route('/:commentId')
     }]
   }, {where: {commentId: req.params.commentId}})
   .then((user))
-})
+})*/
 /*.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
   Comment.findOne({where: {CommentId: req.params.commentId}})
   .then((comment) => {
@@ -101,32 +102,31 @@ router.route('/:commentId')
   .catch(err => next(err));
 })*/
 .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-  Comment.findByPk(req.params.commentId)
-  .then((comment) => comment === null ? next(new Error('Cannot find comment with' + req.params.commentId)) : comment)
-  .then((comment) => comment.dataValues)
-  .then((comment) => { 
-      User.findOne({where: {email: req.user.email}})
-      .then((user) => user.dataValues.id)
-      .then((userId) => {
-          if(comment.UserId !== userId) {
-            let err = new Error('Access Denied');
-            err.status = 401;
-            next(err);
-          }
-          //console.log(comment);
-           Comment.destroy({where: {commentId: req.params.commentId}})
-          .then(() => console.log('Comment deleted'))
-          .then(() => {
-            Comment.findAll({where: {dishId: comment.dishId}, include: [{model: User, as: 'User'}]})
+  Comment.findByPk(req.params.commentId, {include: [{model: User, as: 'User'}]})
+  .then(comment => {
+      if(!comment) {
+        return next(new Error('Cannot find comment with id' + req.params.commentId));
+      }
+
+      if(comment.dataValues.User.email.localeCompare(req.user.email) !== 0) {
+        let err = new Error('Access Denied');
+        err.status = 401;
+        next(err);
+      }
+      Comment.destroy({where: {commentId: req.params.commentId}})
+      .then(() => console.log('Comment Deleted!'))
+      .then(() => {
+        Comment.findAll({ 
+          include: [{model: User, as: 'User'}, {model: Dish, as: 'Dish'}]})
             .then((comments) => {
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json');
               res.json(comments);
               //console.log(JSON.stringify(comments))
             });
-        });
+      })
 
-    })},(err) => next(err))
+  },(err) => next(err))
   .catch(err => next(err));
 })
 

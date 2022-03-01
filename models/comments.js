@@ -27,7 +27,6 @@ Comment.associate = models => {
     Comment.belongsTo(models.Dish, {
         onDelete: 'cascade',
         foreignKey: {
-            field: 'dishId',
             allowNull: false,
         }
     });

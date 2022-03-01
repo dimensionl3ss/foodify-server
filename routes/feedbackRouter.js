@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bodyParser = require("body-parser");
 const cors = require('./cors');
-const Feedback = require('../models/feedbacks');
+const {Feedback} = require('../models/');
 
 router.use(bodyParser.json());
 router.route('/')

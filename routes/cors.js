@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-const whitelist = ['http://localhost:3000','http://localhost:9000'];
+const whitelist = ['http://localhost:3000','http://localhost:9000', 'https://dimensionl3ss.github.io'];
 const corsOptionsDelegate = (req, callback) => {
     var corsOptions;
     console.log(req.header('Origin'));

@@ -26,9 +26,9 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
     User.findOne({where: {email: req.body.email}})
     .then((user) => {
       if(user) {
-        var err = new Error('User ' + req.body.email + ' already exists!');
-        err.status = 403;
-        next(err);
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({success: false, status: 'Registration Unsuccessful!', message: 'Already Registered! Please Login'});
       }
       else {
         User.create(req.body)

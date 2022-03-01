@@ -46,7 +46,6 @@ const Dish = sequelize.define('Dish', {
     Dish.hasMany(models.Comment, { 
       onDelete: 'cascade',
       foreignKey: {
-      fieldName: 'dishId',
       allowNull: false,
     }});
   }
