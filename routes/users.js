@@ -97,7 +97,9 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
   });
 
 router
-.get('/:id', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.route('/:id')
+.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+.get(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
   User.findOne({where: {id: req.params.id}})
   .then((user) => {
     console.log(user);
@@ -107,11 +109,11 @@ router
   }, (err) => next(err))
   .catch((err) => next(err));
 }) 
-.delete('/:id', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
   User.destroy({
-    where: { 
-      [Op.or]: [{id: req.params.id}, {email: req.params.id}]
-    }})
+    where: {
+      email: req.params.id
+  }})
   .then((user) => {
     console.log(user)
     console.log('User with id: '+ req.params.id + ' has been deleted.');

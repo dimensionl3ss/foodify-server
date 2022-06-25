@@ -57,7 +57,29 @@ dishRouter
   })
 
   .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-      Dish.update(req.body, {where: {id: req.params.dishId}})
+
+      Dish.findOne({where: {id: req.params.dishId}})
+      .then((dish) => {
+        if(dish) {
+          return dish;
+        }
+        else throw new Error('Dish doesnt exist!');
+      }, (err) => next(err))
+      .then((dish) => dish.dataValues)
+      .then((dish) => {
+
+        req.body.name = dish.name;
+        req.body.description = dish.description;
+        console.log(req.body);
+        Dish.update(req.body, {where: {id: dish.id}})
+        .then(() => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({success: true, message: 'Dish updated sucessfully!'});
+        })
+      })
+      .catch((err) => next(err));
+      /*Dish.update(req.body, {where: {id: req.params.dishId}})
       .then((dish) => {
 
         if(dish) {
@@ -70,7 +92,7 @@ dishRouter
           })
         }
       }, (err) => next(err))
-      .catch((err) => next(err));
+      .catch((err) => next(err));*/
   })
 
   .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
