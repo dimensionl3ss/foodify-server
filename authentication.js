@@ -5,6 +5,26 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const {User} = require('./models/');
 const {secretKey} = require('./config/config');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+exports.cryptPassword = function(password, callback) {
+  bcrypt.genSalt(10, function(err, salt) {
+   if (err) 
+     return callback(err);
+
+   bcrypt.hash(password, salt, function(err, hash) {
+     return callback(err, hash);
+   });
+ });
+};
+
+const comparePassword = function(plainPass, hashword, callback) {
+  bcrypt.compare(plainPass, hashword, function(err, isPasswordMatch) {   
+      return err == null ?
+          callback(null, isPasswordMatch) :
+          callback(err);
+  });
+};
 
 passport.use(new LocalStrategy(
   {
@@ -18,10 +38,13 @@ passport.use(new LocalStrategy(
         if (user == null) {
           return done(null, false, {message: 'Incorrect Email.'});
         }
-        if(user.password !== password) {
-          return done(null, false, {message: 'Incorrect password.'});
-        }
-        return done(null, user);
+        comparePassword(password, user.password, (err, isPasswordMatch) => {
+          if(err) {
+            return done(null, false, {message: 'Incorrect password.'});
+          }
+          return done(null, user);
+        })
+        
       }, (err) => done(err))
       .catch((err) => done(err));
 }));

@@ -31,16 +31,25 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
         return res.json({success: false, status: 'Registration Unsuccessful!', message: 'Already Registered! Please Login'});
       }
       else {
-        User.create(req.body)
-        .then((user) => {
-          console.log(user);
-          passport.authenticate('local')(req, res, () => {
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.json({success: true, status: 'Registration Successful!', newUser: user});
-          })
-        }, (err) => next(err))
-        .catch((err) => next(err));
+        let password;
+
+        authenticate.cryptPassword(req.body.password, (err, pass) => {
+          if(err) {
+            return next(err);
+          }
+          req.body.password = pass;
+          User.create(req.body)
+          .then((user) => {
+            console.log(user);
+            passport.authenticate('local')(req, res, () => {
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.json({success: true, status: 'Registration Successful!', newUser: user});
+            })
+          }, (err) => next(err))
+          .catch((err) => next(err));
+        });
+        
       }  
     }, (err) => next(err))
     .catch((err) => next(err));
